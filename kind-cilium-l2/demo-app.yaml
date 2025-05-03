@@ -1,0 +1,49 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.26.0
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          resources:
+            requests:
+              memory: '1Mi'
+              cpu: '1m'
+            limits:
+              memory: '6Gi'
+              cpu: '2500m'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  annotations:
+      "lbipam.cilium.io/ips": "172.18.255.200,192.168.1.223"
+      # "lbipam.cilium.io/ips": "192.168.1.222,192.168.1.223"
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - name: http
+      targetPort: 80
+      port: 80
